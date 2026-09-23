@@ -38,6 +38,19 @@ export async function saveFile(
   return key;
 }
 
+export async function deleteFile(key: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    const { getSupabaseClient } = await import("./supabase");
+    const supabase = getSupabaseClient();
+    const { error } = await supabase.storage.from(BUCKET).remove([key]);
+    if (error) throw new Error(`Supabase delete failed: ${error.message}`);
+    return;
+  }
+
+  const fullPath = path.join(LOCAL_STORAGE_DIR, key);
+  await fs.rm(fullPath, { force: true });
+}
+
 export async function readFile(key: string): Promise<Buffer> {
   if (isSupabaseConfigured()) {
     const { getSupabaseClient } = await import("./supabase");

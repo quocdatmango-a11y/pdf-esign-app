@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { documentStatusLabel, documentStatusColor } from "@/lib/status";
+import { DeleteDocumentButton } from "@/components/DeleteDocumentButton";
 
 const auditActionLabel: Record<string, string> = {
   sent: "Đã gửi lời mời ký",
@@ -72,6 +73,7 @@ export default async function DocumentDetailPage({
               Tải file đã ký
             </a>
           )}
+          <DeleteDocumentButton documentId={document.id} documentTitle={document.title} />
         </div>
       </div>
 
