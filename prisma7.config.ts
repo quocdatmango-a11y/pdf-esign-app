@@ -9,6 +9,9 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Migrations need a direct (non-pooled) connection. DIRECT_URL is only
+    // set in production (Supabase); locally DATABASE_URL already points at
+    // a plain local Postgres instance, so it doubles as the direct one.
+    url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"],
   },
 });
