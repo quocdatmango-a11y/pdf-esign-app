@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum DocumentStatus {
+  draft
+  sent
+  viewed
+  signed
+  declined
+}
+
+enum SignerStatus {
+  pending
+  viewed
+  signed
+  declined
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime   @default(now())
+  documents    Document[]
+}
+
+model Document {
+  id               String           @id @default(cuid())
+  owner            User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId          String
+  title            String
+  originalFileKey  String
+  originalFileType String
+  pdfFileKey       String?
+  signedFileKey    String?
+  status           DocumentStatus   @default(draft)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  signatureFields  SignatureField[]
+  signers          Signer[]
+  auditLogs        AuditLog[]
+
+  @@index([ownerId])
+}
+
+model SignatureField {
+  id         String   @id @default(cuid())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+  page       Int
+  x          Float
+  y          Float
+  width      Float
+  height     Float
+  createdAt  DateTime @default(now())
+
+  @@index([documentId])
+}
+
+model Signer {
+  id          String       @id @default(cuid())
+  document    Document     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId  String
+  name        String
+  email       String
+  accessToken String       @unique
+  status      SignerStatus @default(pending)
+  signedAt    DateTime?
+  ipAddress   String?
+  expiresAt   DateTime
+  createdAt   DateTime     @default(now())
+
+  @@index([documentId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+  action     String
+  actorEmail String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([documentId])
+}
